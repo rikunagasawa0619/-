@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    font-size: 13px;
+    color: #202124;
+    background: #f8f9fa;
+    padding: 12px;
+  }
+
+  /* === 検索バー === */
+  .search-wrap {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    padding-bottom: 8px;
+    z-index: 10;
+  }
+  .search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26,115,232,.15);
+  }
+
+  /* === 件数 === */
+  .count {
+    font-size: 11px;
+    color: #5f6368;
+    margin: 4px 0 8px;
+  }
+
+  /* === 商品カード === */
+  .card {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    transition: box-shadow .15s;
+  }
+  .card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
+  .card.out-of-stock {
+    opacity: .55;
+    background: #f1f3f4;
+  }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #1a73e8;
+  }
+  .card-meta {
+    font-size: 11px;
+    color: #5f6368;
+    line-height: 1.5;
+  }
+  .card-meta span { margin-right: 8px; }
+
+  .stock-label {
+    display: inline-block;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .stock-ok   { background: #e6f4ea; color: #137333; }
+  .stock-low  { background: #fef7e0; color: #b06000; }
+  .stock-zero { background: #fce8e6; color: #c5221f; }
+
+  /* === 数量 + ボタン行 === */
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .qty-label {
+    font-size: 11px;
+    color: #5f6368;
+    white-space: nowrap;
+  }
+  .qty-input {
+    width: 56px;
+    padding: 4px 6px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .qty-input:focus {
+    outline: none;
+    border-color: #1a73e8;
+  }
+
+  .btn-sale {
+    flex: 1;
+    padding: 7px 0;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-sale:hover:not(:disabled) { background: #1765cc; }
+  .btn-sale:disabled {
+    background: #dadce0;
+    color: #80868b;
+    cursor: default;
+  }
+
+  /* === トースト === */
+  .toast {
+    position: fixed;
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .25s, transform .25s;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .toast.success { background: #137333; }
+  .toast.error   { background: #c5221f; }
+
+  /* === ローディング === */
+  .loading {
+    text-align: center;
+    padding: 40px 0;
+    color: #5f6368;
+  }
+  .spinner {
+    display: inline-block;
+    width: 24px; height: 24px;
+    border: 3px solid #dadce0;
+    border-top-color: #1a73e8;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- 検索 -->
+<div class="search-wrap">
+  <input type="text" class="search-input" id="search"
+         placeholder="商品コード / 商品名 で検索…">
+</div>
+
+<!-- 件数 -->
+<div class="count" id="count"></div>
+
+<!-- 商品リスト -->
+<div id="list">
+  <div class="loading"><div class="spinner"></div><p style="margin-top:8px">商品を読み込み中…</p></div>
+</div>
+
+<!-- トースト -->
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ===== データ ===== */
+  var products = [];
+  var filteredProducts = [];
+
+  /* ===== 初期化 ===== */
+  document.addEventListener('DOMContentLoaded', function() {
+    google.script.run
+      .withSuccessHandler(onProductsLoaded)
+      .withFailureHandler(onLoadError)
+      .getProductList();
+  });
+
+  function onProductsLoaded(data) {
+    products = data || [];
+    filteredProducts = products;
+    renderList(products);
+  }
+
+  function onLoadError(err) {
+    document.getElementById('list').innerHTML =
+      '<p style="color:#c5221f;padding:16px">読み込みに失敗しました: ' + escapeHtml(err.message) + '</p>';
+  }
+
+  /* ===== 検索 ===== */
+  document.getElementById('search').addEventListener('input', function() {
+    var q = this.value.trim().toLowerCase();
+    if (!q) {
+      filteredProducts = products;
+    } else {
+      filteredProducts = products.filter(function(p) {
+        return p.code.toLowerCase().indexOf(q) !== -1 ||
+               p.name.toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    renderList(filteredProducts);
+  });
+
+  /* ===== 描画 ===== */
+  function renderList(items) {
+    var countEl = document.getElementById('count');
+    countEl.textContent = items.length + ' 件表示' + (items.length !== products.length ? '（全 ' + products.length + ' 件）' : '');
+
+    var container = document.getElementById('list');
+    if (items.length === 0) {
+      container.innerHTML = '<p style="color:#5f6368;padding:16px;text-align:center">該当する商品がありません</p>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+      var p = items[i];
+      var outOfStock = p.stock <= 0;
+      html += '<div class="card' + (outOfStock ? ' out-of-stock' : '') + '" data-code="' + escapeHtml(p.code) + '">';
+
+      // タイトル
+      html += '<div class="card-title">' + escapeHtml(p.code) + '｜' + escapeHtml(p.name) + '</div>';
+
+      // メタ情報
+      html += '<div class="card-meta">';
+      if (p.series) html += '<span>' + escapeHtml(p.series) + '</span>';
+      if (p.size)   html += '<span>' + escapeHtml(p.size) + '</span>';
+      if (p.gender) html += '<span>' + escapeHtml(p.gender) + '</span>';
+      if (p.price)  html += '<span>&yen;' + Number(p.price).toLocaleString() + '</span>';
+
+      // 残数ラベル
+      var stockClass = outOfStock ? 'stock-zero' : (p.stock <= 3 ? 'stock-low' : 'stock-ok');
+      html += '<span class="stock-label ' + stockClass + '" id="stock-' + escapeHtml(p.code) + '">';
+      html += outOfStock ? '在庫切れ' : '残 ' + p.stock;
+      html += '</span>';
+      html += '</div>';
+
+      // 数量 + ボタン
+      html += '<div class="card-actions">';
+      html += '<label class="qty-label">数量</label>';
+      html += '<input type="number" class="qty-input" id="qty-' + escapeHtml(p.code) + '" '
+            + 'value="1" min="1" max="' + Math.max(p.stock, 0) + '"'
+            + (outOfStock ? ' disabled' : '') + '>';
+      html += '<button class="btn-sale" id="btn-' + escapeHtml(p.code) + '" '
+            + 'onclick="doSale(\'' + escapeJs(p.code) + '\')"'
+            + (outOfStock ? ' disabled' : '') + '>'
+            + (outOfStock ? '在庫切れ' : '売上登録')
+            + '</button>';
+      html += '</div>';
+
+      html += '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  /* ===== 売上登録 ===== */
+  function doSale(code) {
+    var btn = document.getElementById('btn-' + code);
+    var qtyInput = document.getElementById('qty-' + code);
+    var qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+
+    btn.disabled = true;
+    btn.textContent = '登録中…';
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          showToast(result.message, 'success');
+          updateCardStock(code, result.newStock);
+        } else {
+          showToast(result.message, 'error');
+          btn.disabled = false;
+          btn.textContent = '売上登録';
+        }
+      })
+      .withFailureHandler(function(err) {
+        showToast('エラー: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = '売上登録';
+      })
+      .recordSaleByCode(code, qty);
+  }
+
+  /* ===== カード残数更新 ===== */
+  function updateCardStock(code, newStock) {
+    // ローカルデータ更新
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].code === code) {
+        products[i].stock = newStock;
+        break;
+      }
+    }
+
+    var stockEl = document.getElementById('stock-' + code);
+    var btn     = document.getElementById('btn-' + code);
+    var qtyEl   = document.getElementById('qty-' + code);
+    var card    = btn ? btn.closest('.card') : null;
+
+    if (newStock <= 0) {
+      if (stockEl) { stockEl.className = 'stock-label stock-zero'; stockEl.textContent = '在庫切れ'; }
+      if (btn)     { btn.disabled = true; btn.textContent = '在庫切れ'; }
+      if (qtyEl)   { qtyEl.disabled = true; qtyEl.value = 1; qtyEl.max = 0; }
+      if (card)    { card.classList.add('out-of-stock'); }
+    } else {
+      var stockClass = newStock <= 3 ? 'stock-low' : 'stock-ok';
+      if (stockEl) { stockEl.className = 'stock-label ' + stockClass; stockEl.textContent = '残 ' + newStock; }
+      if (btn)     { btn.disabled = false; btn.textContent = '売上登録'; }
+      if (qtyEl)   { qtyEl.max = newStock; if (parseInt(qtyEl.value, 10) > newStock) qtyEl.value = newStock; }
+      if (card)    { card.classList.remove('out-of-stock'); }
+    }
+  }
+
+  /* ===== トースト ===== */
+  function showToast(msg, type) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(function() { toast.className = 'toast'; }, 3000);
+  }
+
+  /* ===== ユーティリティ ===== */
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(s));
+    return div.innerHTML;
+  }
+  function escapeJs(s) {
+    return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+</script>
+</body>
+</html>

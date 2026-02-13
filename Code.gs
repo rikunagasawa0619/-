@@ -72,7 +72,7 @@ function resolveHeaders_(headers, spec) {
 /** 商品一覧ヘッダー候補 */
 var PRODUCT_HEADER_SPEC = {
   code:    ['商品コード'],
-  series:  ['シリーズ'],
+  series:  ['シリーズ', '生地シリーズ'],
   size:    ['サイズ'],
   name:    ['商品名'],
   price:   ['金額(本体)', '金額（本体）', '金額'],
@@ -125,7 +125,7 @@ function getProductList() {
 var SALES_HEADER_SPEC = {
   datetime: ['販売時刻', '売上時刻', '日時'],
   code:     ['商品コード'],
-  series:   ['シリーズ'],
+  series:   ['シリーズ', '生地シリーズ'],
   size:     ['サイズ'],
   name:     ['商品名'],
   price:    ['金額(本体)', '金額（本体）', '金額'],

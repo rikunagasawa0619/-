@@ -24,10 +24,10 @@
   }
   .search-input {
     width: 100%;
-    padding: 8px 12px;
+    padding: 10px 12px;
     border: 1px solid #dadce0;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 14px;
     outline: none;
     transition: border-color .2s;
   }
@@ -44,11 +44,12 @@
     margin-bottom: 10px;
   }
   .cat-chip {
-    padding: 6px 12px;
+    padding: 8px 14px;
     background: #fff;
     border: 1px solid #dadce0;
-    border-radius: 16px;
-    font-size: 12px;
+    border-radius: 18px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: all .15s;
     white-space: nowrap;
@@ -68,12 +69,12 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 6px 12px;
+    padding: 8px 14px;
     margin-bottom: 8px;
     background: #fff;
     border: 1px solid #dadce0;
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 13px;
     color: #5f6368;
     cursor: pointer;
     transition: all .15s;
@@ -95,130 +96,112 @@
   .gender-card {
     background: #fff;
     border: 1px solid #dadce0;
-    border-radius: 8px;
-    padding: 14px 12px;
+    border-radius: 10px;
+    padding: 18px 12px;
     margin-bottom: 8px;
     cursor: pointer;
     text-align: center;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16px;
     color: #1a73e8;
     transition: box-shadow .15s;
   }
   .gender-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
   .gender-card .sub {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 400;
     color: #5f6368;
     margin-top: 4px;
   }
 
-  /* === 商品カード（クリック可能） === */
+  /* === 商品カード（サイズボタン付き） === */
   .product-card {
     background: #fff;
     border: 1px solid #dadce0;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: box-shadow .15s;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
   }
-  .product-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
-  .product-card.out-of-stock {
-    opacity: .55;
-    background: #f1f3f4;
-  }
-  .product-card .name {
+  .product-card .card-title {
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     color: #1a73e8;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
   }
-  .product-card .meta {
-    font-size: 11px;
-    color: #5f6368;
-    line-height: 1.5;
-  }
-  .product-card .meta span { margin-right: 8px; }
 
-  /* === 売上登録カード === */
-  .sale-card {
-    background: #fff;
-    border: 1px solid #dadce0;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    transition: box-shadow .15s;
-  }
-  .sale-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
-  .sale-card.out-of-stock {
-    opacity: .55;
-    background: #f1f3f4;
-  }
-  .sale-card .card-title {
-    font-weight: 600;
-    font-size: 13px;
-    color: #1a73e8;
-    margin-bottom: 4px;
-  }
-  .sale-card .card-meta {
-    font-size: 11px;
-    color: #5f6368;
-    line-height: 1.5;
-  }
-  .sale-card .card-meta span { margin-right: 8px; }
-
-  /* === 在庫ラベル === */
-  .stock-label {
-    display: inline-block;
-    font-weight: 600;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-  }
-  .stock-ok   { background: #e6f4ea; color: #137333; }
-  .stock-low  { background: #fef7e0; color: #b06000; }
-  .stock-zero { background: #fce8e6; color: #c5221f; }
-
-  /* === 数量 + ボタン行 === */
-  .card-actions {
+  /* 個数 + サイズボタン行 */
+  .card-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .qty-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
   }
   .qty-label {
-    font-size: 11px;
+    font-size: 12px;
     color: #5f6368;
-    white-space: nowrap;
+    font-weight: 500;
   }
   .qty-input {
-    width: 56px;
-    padding: 4px 6px;
+    width: 44px;
+    padding: 8px 4px;
     border: 1px solid #dadce0;
-    border-radius: 4px;
-    font-size: 13px;
+    border-radius: 8px;
+    font-size: 15px;
     text-align: center;
+    outline: none;
   }
   .qty-input:focus {
-    outline: none;
     border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26,115,232,.15);
   }
 
-  .btn-sale {
+  /* サイズボタン */
+  .size-wrap {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
     flex: 1;
-    padding: 7px 0;
-    background: #1a73e8;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .15s;
   }
-  .btn-sale:hover:not(:disabled) { background: #1765cc; }
-  .btn-sale:disabled {
+  .size-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    padding: 8px 6px 5px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity .15s;
+    color: #fff;
+    flex: 1;
+  }
+  .size-btn:hover:not(:disabled) { opacity: 0.8; }
+  .size-btn .size-name {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .size-btn .size-stock {
+    font-size: 9px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-top: 2px;
+    opacity: 0.9;
+  }
+  .size-btn.stock-ok {
+    background: #1a73e8;
+  }
+  .size-btn.stock-low {
+    background: #c5221f;
+  }
+  .size-btn.stock-zero {
     background: #dadce0;
     color: #80868b;
     cursor: default;
@@ -230,9 +213,9 @@
     bottom: 16px;
     left: 12px;
     right: 12px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: #fff;
     opacity: 0;
@@ -295,12 +278,9 @@
   var products = [];
   var selectedCategory = null;
   var selectedGender = null;
-  var selectedProductName = null;
 
-  /* ===== カテゴリ表示順（シートの値と一致させる） ===== */
+  /* ===== カテゴリ表示順 ===== */
   var CATEGORY_ORDER = ['トップス', 'ボトムス', 'アーム系', 'ソックス系', 'その他'];
-
-  /* Men's/Women's サブ階層を挟むカテゴリ */
   var GENDER_CATEGORIES = ['トップス', 'ボトムス'];
 
   /* ===== 初期化 ===== */
@@ -325,10 +305,7 @@
   document.getElementById('search').addEventListener('input', function() {
     var q = this.value.trim().toLowerCase();
     if (!q) {
-      // 検索クリア → 元の画面に戻る
-      if (selectedProductName) {
-        showSizes();
-      } else if (selectedGender) {
+      if (selectedGender) {
         showProducts();
       } else if (selectedCategory) {
         if (GENDER_CATEGORIES.indexOf(selectedCategory) !== -1) {
@@ -352,9 +329,7 @@
   function showCategories() {
     selectedCategory = null;
     selectedGender = null;
-    selectedProductName = null;
 
-    // シートの値からカテゴリ一覧を作成（CATEGORY_ORDER順 + 未定義は末尾）
     var catCounts = {};
     for (var i = 0; i < products.length; i++) {
       var cat = products[i].category || 'その他';
@@ -389,7 +364,6 @@
   function onCategoryClick(cat) {
     selectedCategory = cat;
     selectedGender = null;
-    selectedProductName = null;
     document.getElementById('search').value = '';
 
     if (GENDER_CATEGORIES.indexOf(cat) !== -1) {
@@ -399,16 +373,14 @@
     }
   }
 
-  /* ===== Men's / Women's 選択（トップス・ボトムスのみ） ===== */
+  /* ===== Men's / Women's 選択 ===== */
   function showGenders() {
     selectedGender = null;
-    selectedProductName = null;
     updateCatChips();
 
     document.getElementById('nav').innerHTML =
       '<button class="btn-back" onclick="showCategories()">\u2190 カテゴリ一覧</button>';
 
-    // このカテゴリにある gender の種類を集める
     var genderCounts = {};
     for (var i = 0; i < products.length; i++) {
       var p = products[i];
@@ -425,23 +397,19 @@
             + escapeHtml(g)
             + '<div class="sub">' + genderCounts[g] + ' 件</div></div>';
     }
-
     document.getElementById('content').innerHTML = html;
   }
 
   function onGenderClick(gender) {
     selectedGender = gender;
-    selectedProductName = null;
     document.getElementById('search').value = '';
     showProducts();
   }
 
-  /* ===== 商品一覧（名前でグループ化） ===== */
+  /* ===== 商品一覧（サイズボタン付きカード） ===== */
   function showProducts() {
-    selectedProductName = null;
     updateCatChips();
 
-    // 戻るボタン
     var hasGender = GENDER_CATEGORIES.indexOf(selectedCategory) !== -1;
     if (hasGender && selectedGender) {
       document.getElementById('nav').innerHTML =
@@ -451,7 +419,6 @@
         '<button class="btn-back" onclick="showCategories()">\u2190 カテゴリ一覧</button>';
     }
 
-    // フィルタ
     var filtered = [];
     for (var i = 0; i < products.length; i++) {
       var p = products[i];
@@ -460,99 +427,25 @@
       filtered.push(p);
     }
 
-    // 名前でグループ化
-    var groups = {};
-    var groupOrder = [];
-    for (var i = 0; i < filtered.length; i++) {
-      var p = filtered[i];
-      var key = p.name;
-      if (!groups[key]) {
-        groups[key] = [];
-        groupOrder.push(key);
-      }
-      groups[key].push(p);
-    }
+    var grouped = groupByName(filtered);
 
     var title = selectedCategory;
     if (hasGender && selectedGender) title += ' / ' + selectedGender;
-    document.getElementById('count').textContent = escapeHtml(title) + ': ' + groupOrder.length + ' 商品';
+    document.getElementById('count').textContent = escapeHtml(title) + ': ' + grouped.order.length + ' 商品';
 
+    var showSeries = hasGender;
     var html = '';
-    for (var i = 0; i < groupOrder.length; i++) {
-      var name = groupOrder[i];
-      var items = groups[name];
-      var totalStock = 0;
-      var price = items[0].price;
-      var series = items[0].series;
-      var sizes = [];
-      for (var j = 0; j < items.length; j++) {
-        totalStock += items[j].stock;
-        if (items[j].size) sizes.push(items[j].size);
-      }
-
-      var outOfStock = totalStock <= 0;
-      html += '<div class="product-card' + (outOfStock ? ' out-of-stock' : '') + '" '
-            + 'onclick="onProductClick(\'' + escapeJs(name) + '\')">';
-      html += '<div class="name">' + escapeHtml(name) + '</div>';
-      html += '<div class="meta">';
-      if (series) html += '<span>' + escapeHtml(series) + '</span>';
-      if (price)  html += '<span>&yen;' + Number(price).toLocaleString() + '</span>';
-      if (sizes.length > 1) html += '<span>サイズ: ' + escapeHtml(sizes.join(', ')) + '</span>';
-      var stockClass = outOfStock ? 'stock-zero' : (totalStock <= 3 ? 'stock-low' : 'stock-ok');
-      html += '<span class="stock-label ' + stockClass + '">'
-            + (outOfStock ? '在庫切れ' : '計 ' + totalStock + ' 点') + '</span>';
-      html += '</div></div>';
+    for (var i = 0; i < grouped.order.length; i++) {
+      html += buildProductCard(grouped.groups[grouped.order[i]], showSeries);
     }
 
-    if (groupOrder.length === 0) {
+    if (grouped.order.length === 0) {
       html = '<p style="color:#5f6368;text-align:center;padding:16px">このカテゴリに商品がありません</p>';
     }
-
     document.getElementById('content').innerHTML = html;
   }
 
-  /* ===== 商品選択 → サイズ一覧 ===== */
-  function onProductClick(name) {
-    selectedProductName = name;
-    document.getElementById('search').value = '';
-    showSizes();
-  }
-
-  function showSizes() {
-    updateCatChips();
-
-    // 戻る先を決める
-    var hasGender = GENDER_CATEGORIES.indexOf(selectedCategory) !== -1;
-    var backLabel = selectedCategory;
-    if (hasGender && selectedGender) backLabel += ' / ' + selectedGender;
-    document.getElementById('nav').innerHTML =
-      '<button class="btn-back" onclick="showProducts()">\u2190 ' + escapeHtml(backLabel) + '</button>';
-
-    // この商品名に該当する商品を取得
-    var items = [];
-    for (var i = 0; i < products.length; i++) {
-      var p = products[i];
-      if ((p.category || 'その他') !== selectedCategory) continue;
-      if (hasGender && selectedGender && (p.gender || '未設定') !== selectedGender) continue;
-      if (p.name !== selectedProductName) continue;
-      items.push(p);
-    }
-
-    document.getElementById('count').textContent = escapeHtml(selectedProductName);
-
-    var html = '';
-    for (var i = 0; i < items.length; i++) {
-      html += buildSaleCard(items[i], true);
-    }
-
-    if (items.length === 0) {
-      html = '<p style="color:#5f6368;text-align:center;padding:16px">該当する商品がありません</p>';
-    }
-
-    document.getElementById('content').innerHTML = html;
-  }
-
-  /* ===== 検索結果（フラットリスト） ===== */
+  /* ===== 検索結果 ===== */
   function showSearchResults(results) {
     var chips = document.querySelectorAll('.cat-chip');
     for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
@@ -567,50 +460,71 @@
       return;
     }
 
+    var grouped = groupByName(results);
     var html = '';
-    for (var i = 0; i < results.length; i++) {
-      html += buildSaleCard(results[i], false);
+    for (var i = 0; i < grouped.order.length; i++) {
+      var items = grouped.groups[grouped.order[i]];
+      var isGenderCat = GENDER_CATEGORIES.indexOf(items[0].category) !== -1;
+      html += buildProductCard(items, isGenderCat);
     }
     document.getElementById('content').innerHTML = html;
   }
 
-  /* ===== 売上登録カード生成 ===== */
-  function buildSaleCard(p, showSizeAsTitle) {
-    var outOfStock = p.stock <= 0;
-    var html = '<div class="sale-card' + (outOfStock ? ' out-of-stock' : '') + '">';
+  /* ===== 商品をname でグループ化 ===== */
+  function groupByName(items) {
+    var groups = {};
+    var order = [];
+    for (var i = 0; i < items.length; i++) {
+      var key = items[i].name;
+      if (!groups[key]) {
+        groups[key] = [];
+        order.push(key);
+      }
+      groups[key].push(items[i]);
+    }
+    return { groups: groups, order: order };
+  }
 
-    if (showSizeAsTitle) {
-      var title = p.size ? p.size : p.code;
-      html += '<div class="card-title">' + escapeHtml(title) + '</div>';
+  /* ===== 商品カード生成（サイズボタン付き） ===== */
+  function buildProductCard(items, showSeries) {
+    var name = items[0].name;
+    var series = items[0].series;
+    var groupId = items[0].code;
+
+    var html = '<div class="product-card">';
+
+    // タイトル: トップス/ボトムスは「シリーズ｜商品名」、それ以外は「商品名」
+    if (showSeries && series) {
+      html += '<div class="card-title">' + escapeHtml(series) + '\uff5c' + escapeHtml(name) + '</div>';
     } else {
-      html += '<div class="card-title">' + escapeHtml(p.code) + '\uff5c' + escapeHtml(p.name) + '</div>';
+      html += '<div class="card-title">' + escapeHtml(name) + '</div>';
     }
 
-    html += '<div class="card-meta">';
-    if (!showSizeAsTitle) {
-      if (p.series) html += '<span>' + escapeHtml(p.series) + '</span>';
-      if (p.size)   html += '<span>' + escapeHtml(p.size) + '</span>';
-    }
-    html += '<span>' + escapeHtml(p.code) + '</span>';
-    if (p.gender) html += '<span>' + escapeHtml(p.gender) + '</span>';
-    if (p.price)  html += '<span>&yen;' + Number(p.price).toLocaleString() + '</span>';
-
-    var stockClass = outOfStock ? 'stock-zero' : (p.stock <= 3 ? 'stock-low' : 'stock-ok');
-    html += '<span class="stock-label ' + stockClass + '" id="stock-' + escapeHtml(p.code) + '">'
-          + (outOfStock ? '在庫切れ' : '残 ' + p.stock) + '</span>';
+    // 個数 + サイズボタン
+    html += '<div class="card-row">';
+    html += '<div class="qty-group">';
+    html += '<span class="qty-label">個数</span>';
+    html += '<input type="number" class="qty-input" id="qty-' + escapeHtml(groupId) + '" value="1" min="1">';
     html += '</div>';
 
-    html += '<div class="card-actions">';
-    html += '<label class="qty-label">数量</label>';
-    html += '<input type="number" class="qty-input" id="qty-' + escapeHtml(p.code) + '" '
-          + 'value="1" min="1" max="' + Math.max(p.stock, 0) + '"'
-          + (outOfStock ? ' disabled' : '') + '>';
-    html += '<button class="btn-sale" id="btn-' + escapeHtml(p.code) + '" '
-          + 'onclick="doSale(\'' + escapeJs(p.code) + '\')"'
-          + (outOfStock ? ' disabled' : '') + '>'
-          + (outOfStock ? '在庫切れ' : '売上登録')
-          + '</button>';
-    html += '</div></div>';
+    html += '<div class="size-wrap">';
+    for (var j = 0; j < items.length; j++) {
+      var p = items[j];
+      var btnClass = p.stock <= 0 ? 'stock-zero' : (p.stock < 4 ? 'stock-low' : 'stock-ok');
+      var sizeLabel = p.size || '登録';
+
+      html += '<button class="size-btn ' + btnClass + '" id="btn-' + escapeHtml(p.code) + '" '
+            + 'data-size="' + escapeHtml(sizeLabel) + '" '
+            + 'onclick="doSaleGroup(\'' + escapeJs(p.code) + '\',\'' + escapeJs(groupId) + '\')"'
+            + (p.stock <= 0 ? ' disabled' : '') + '>';
+      html += '<span class="size-name">' + escapeHtml(sizeLabel) + '</span>';
+      html += '<span class="size-stock">' + (p.stock <= 0 ? '---' : '残' + p.stock) + '</span>';
+      html += '</button>';
+    }
+    html += '</div>'; // size-wrap
+
+    html += '</div>'; // card-row
+    html += '</div>'; // product-card
     return html;
   }
 
@@ -640,14 +554,16 @@
     catWrap.innerHTML = html;
   }
 
-  /* ===== 売上登録 ===== */
-  function doSale(code) {
+  /* ===== 売上登録（サイズボタンから） ===== */
+  function doSaleGroup(code, groupId) {
     var btn = document.getElementById('btn-' + code);
-    var qtyInput = document.getElementById('qty-' + code);
+    var qtyInput = document.getElementById('qty-' + groupId);
     var qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+    var sizeName = btn.getAttribute('data-size');
 
     btn.disabled = true;
-    btn.textContent = '登録中…';
+    btn.innerHTML = '<span class="size-name">' + escapeHtml(sizeName) + '</span>'
+                  + '<span class="size-stock">\u2026</span>';
 
     google.script.run
       .withSuccessHandler(function(result) {
@@ -656,14 +572,12 @@
           updateStock(code, result.newStock);
         } else {
           showToast(result.message, 'error');
-          btn.disabled = false;
-          btn.textContent = '売上登録';
+          refreshButton(code);
         }
       })
       .withFailureHandler(function(err) {
         showToast('エラー: ' + err.message, 'error');
-        btn.disabled = false;
-        btn.textContent = '売上登録';
+        refreshButton(code);
       })
       .recordSaleByCode(code, qty);
   }
@@ -676,21 +590,31 @@
         break;
       }
     }
+    refreshButton(code);
+  }
 
-    var stockEl = document.getElementById('stock-' + code);
-    var btn     = document.getElementById('btn-' + code);
-    var qtyEl   = document.getElementById('qty-' + code);
+  function refreshButton(code) {
+    var btn = document.getElementById('btn-' + code);
+    if (!btn) return;
 
-    if (newStock <= 0) {
-      if (stockEl) { stockEl.className = 'stock-label stock-zero'; stockEl.textContent = '在庫切れ'; }
-      if (btn)     { btn.disabled = true; btn.textContent = '在庫切れ'; }
-      if (qtyEl)   { qtyEl.disabled = true; qtyEl.value = 1; qtyEl.max = 0; }
-    } else {
-      var stockClass = newStock <= 3 ? 'stock-low' : 'stock-ok';
-      if (stockEl) { stockEl.className = 'stock-label ' + stockClass; stockEl.textContent = '残 ' + newStock; }
-      if (btn)     { btn.disabled = false; btn.textContent = '売上登録'; }
-      if (qtyEl)   { qtyEl.max = newStock; if (parseInt(qtyEl.value, 10) > newStock) qtyEl.value = newStock; }
+    var stock = 0;
+    var sizeName = btn.getAttribute('data-size') || '';
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].code === code) {
+        stock = products[i].stock;
+        break;
+      }
     }
+
+    if (stock <= 0) {
+      btn.className = 'size-btn stock-zero';
+      btn.disabled = true;
+    } else {
+      btn.className = 'size-btn ' + (stock < 4 ? 'stock-low' : 'stock-ok');
+      btn.disabled = false;
+    }
+    btn.innerHTML = '<span class="size-name">' + escapeHtml(sizeName) + '</span>'
+                  + '<span class="size-stock">' + (stock <= 0 ? '---' : '残' + stock) + '</span>';
   }
 
   /* ===== トースト ===== */

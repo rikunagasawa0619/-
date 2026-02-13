@@ -36,6 +36,54 @@
     box-shadow: 0 0 0 2px rgba(26,115,232,.15);
   }
 
+  /* === カテゴリチップ === */
+  .cat-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .cat-chip {
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .cat-chip:hover {
+    background: #e8f0fe;
+    border-color: #1a73e8;
+  }
+  .cat-chip.active {
+    background: #1a73e8;
+    color: #fff;
+    border-color: #1a73e8;
+  }
+
+  /* === 戻るボタン === */
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #5f6368;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-back:hover {
+    background: #e8f0fe;
+    color: #1a73e8;
+    border-color: #1a73e8;
+  }
+
   /* === 件数 === */
   .count {
     font-size: 11px;
@@ -43,8 +91,36 @@
     margin: 4px 0 8px;
   }
 
-  /* === 商品カード === */
-  .card {
+  /* === 商品カード（カテゴリ内一覧：クリック可能） === */
+  .product-card {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: box-shadow .15s;
+  }
+  .product-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
+  .product-card.out-of-stock {
+    opacity: .55;
+    background: #f1f3f4;
+  }
+  .product-card .name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1a73e8;
+    margin-bottom: 4px;
+  }
+  .product-card .meta {
+    font-size: 11px;
+    color: #5f6368;
+    line-height: 1.5;
+  }
+  .product-card .meta span { margin-right: 8px; }
+
+  /* === サイズ／検索結果カード（売上登録ボタン付き） === */
+  .sale-card {
     background: #fff;
     border: 1px solid #dadce0;
     border-radius: 8px;
@@ -52,25 +128,25 @@
     margin-bottom: 8px;
     transition: box-shadow .15s;
   }
-  .card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
-  .card.out-of-stock {
+  .sale-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
+  .sale-card.out-of-stock {
     opacity: .55;
     background: #f1f3f4;
   }
-
-  .card-title {
+  .sale-card .card-title {
     font-weight: 600;
     font-size: 13px;
-    margin-bottom: 4px;
     color: #1a73e8;
+    margin-bottom: 4px;
   }
-  .card-meta {
+  .sale-card .card-meta {
     font-size: 11px;
     color: #5f6368;
     line-height: 1.5;
   }
-  .card-meta span { margin-right: 8px; }
+  .sale-card .card-meta span { margin-right: 8px; }
 
+  /* === 在庫ラベル === */
   .stock-label {
     display: inline-block;
     font-weight: 600;
@@ -175,11 +251,17 @@
          placeholder="商品コード / 商品名 で検索…">
 </div>
 
+<!-- カテゴリチップ -->
+<div class="cat-wrap" id="catWrap"></div>
+
+<!-- ナビゲーション -->
+<div id="nav"></div>
+
 <!-- 件数 -->
 <div class="count" id="count"></div>
 
-<!-- 商品リスト -->
-<div id="list">
+<!-- コンテンツ -->
+<div id="content">
   <div class="loading"><div class="spinner"></div><p style="margin-top:8px">商品を読み込み中…</p></div>
 </div>
 
@@ -189,7 +271,35 @@
 <script>
   /* ===== データ ===== */
   var products = [];
-  var filteredProducts = [];
+  var selectedCategory = null;
+  var selectedProductName = null;
+
+  /* ===== カテゴリ定義 ===== */
+  var CATEGORIES = [
+    { id: 'arm',     label: 'アーム系',   keywords: ['アーム'] },
+    { id: 'socks',   label: 'ソックス系', keywords: ['ソックス', '靴下'] },
+    { id: 'tops',    label: 'トップス系', keywords: ['トップス', 'シャツ', 'ポロ', 'ジャケット', 'ベスト', 'ニット'] },
+    { id: 'bottoms', label: 'ボトムス系', keywords: ['ボトムス', 'パンツ', 'スカート', 'レギンス', 'タイツ', 'ショーツ'] },
+    { id: 'other',   label: 'その他商品', keywords: [] }
+  ];
+
+  function categorize(p) {
+    var text = (p.name + ' ' + p.series).toLowerCase();
+    for (var i = 0; i < CATEGORIES.length - 1; i++) {
+      var cat = CATEGORIES[i];
+      for (var j = 0; j < cat.keywords.length; j++) {
+        if (text.indexOf(cat.keywords[j].toLowerCase()) !== -1) return cat.id;
+      }
+    }
+    return 'other';
+  }
+
+  function getCategoryLabel(catId) {
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      if (CATEGORIES[i].id === catId) return CATEGORIES[i].label;
+    }
+    return '';
+  }
 
   /* ===== 初期化 ===== */
   document.addEventListener('DOMContentLoaded', function() {
@@ -201,12 +311,14 @@
 
   function onProductsLoaded(data) {
     products = data || [];
-    filteredProducts = products;
-    renderList(products);
+    for (var i = 0; i < products.length; i++) {
+      products[i].category = categorize(products[i]);
+    }
+    showCategories();
   }
 
   function onLoadError(err) {
-    document.getElementById('list').innerHTML =
+    document.getElementById('content').innerHTML =
       '<p style="color:#c5221f;padding:16px">読み込みに失敗しました: ' + escapeHtml(err.message) + '</p>';
   }
 
@@ -214,66 +326,241 @@
   document.getElementById('search').addEventListener('input', function() {
     var q = this.value.trim().toLowerCase();
     if (!q) {
-      filteredProducts = products;
-    } else {
-      filteredProducts = products.filter(function(p) {
-        return p.code.toLowerCase().indexOf(q) !== -1 ||
-               p.name.toLowerCase().indexOf(q) !== -1;
-      });
+      // 検索クリア → 元の画面に戻る
+      if (selectedProductName) {
+        showSizes();
+      } else if (selectedCategory) {
+        showProducts();
+      } else {
+        showCategories();
+      }
+      return;
     }
-    renderList(filteredProducts);
+    var results = products.filter(function(p) {
+      return p.code.toLowerCase().indexOf(q) !== -1 ||
+             p.name.toLowerCase().indexOf(q) !== -1;
+    });
+    showSearchResults(results);
   });
 
-  /* ===== 描画 ===== */
-  function renderList(items) {
-    var countEl = document.getElementById('count');
-    countEl.textContent = items.length + ' 件表示' + (items.length !== products.length ? '（全 ' + products.length + ' 件）' : '');
+  /* ===== カテゴリ一覧 ===== */
+  function showCategories() {
+    selectedCategory = null;
+    selectedProductName = null;
 
-    var container = document.getElementById('list');
+    var catWrap = document.getElementById('catWrap');
+    var html = '';
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      var cat = CATEGORIES[i];
+      var cnt = countByCategory(cat.id);
+      if (cnt === 0) continue;
+      html += '<div class="cat-chip" onclick="onCategoryClick(\'' + cat.id + '\')">'
+            + cat.label + ' (' + cnt + ')</div>';
+    }
+    catWrap.innerHTML = html;
+
+    document.getElementById('nav').innerHTML = '';
+    document.getElementById('count').textContent = '全 ' + products.length + ' 件';
+    document.getElementById('content').innerHTML =
+      '<p style="color:#5f6368;text-align:center;padding:24px 0">'
+      + 'カテゴリを選択するか、<br>検索バーで商品を検索してください</p>';
+  }
+
+  function countByCategory(catId) {
+    var n = 0;
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].category === catId) n++;
+    }
+    return n;
+  }
+
+  /* ===== カテゴリ選択 → 商品一覧 ===== */
+  function onCategoryClick(catId) {
+    selectedCategory = catId;
+    selectedProductName = null;
+    document.getElementById('search').value = '';
+    showProducts();
+  }
+
+  function showProducts() {
+    var label = getCategoryLabel(selectedCategory);
+
+    // カテゴリチップ更新（選択中をハイライト）
+    updateCatChips();
+
+    // 戻るボタン
+    document.getElementById('nav').innerHTML =
+      '<button class="btn-back" onclick="showCategories()">\u2190 カテゴリ一覧</button>';
+
+    // カテゴリ内の商品を名前でグループ化
+    var catProducts = [];
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].category === selectedCategory) catProducts.push(products[i]);
+    }
+
+    var groups = {};
+    var groupOrder = [];
+    for (var i = 0; i < catProducts.length; i++) {
+      var p = catProducts[i];
+      var key = p.name;
+      if (!groups[key]) {
+        groups[key] = [];
+        groupOrder.push(key);
+      }
+      groups[key].push(p);
+    }
+
+    document.getElementById('count').textContent = label + ': ' + groupOrder.length + ' 商品';
+
+    var html = '';
+    for (var i = 0; i < groupOrder.length; i++) {
+      var name = groupOrder[i];
+      var items = groups[name];
+      var totalStock = 0;
+      var price = items[0].price;
+      var series = items[0].series;
+      var sizes = [];
+      for (var j = 0; j < items.length; j++) {
+        totalStock += items[j].stock;
+        if (items[j].size) sizes.push(items[j].size);
+      }
+
+      var outOfStock = totalStock <= 0;
+      html += '<div class="product-card' + (outOfStock ? ' out-of-stock' : '') + '" '
+            + 'onclick="onProductClick(\'' + escapeJs(name) + '\')">';
+      html += '<div class="name">' + escapeHtml(name) + '</div>';
+      html += '<div class="meta">';
+      if (series) html += '<span>' + escapeHtml(series) + '</span>';
+      if (price)  html += '<span>&yen;' + Number(price).toLocaleString() + '</span>';
+      if (sizes.length > 1) html += '<span>サイズ: ' + escapeHtml(sizes.join(', ')) + '</span>';
+      var stockClass = outOfStock ? 'stock-zero' : (totalStock <= 3 ? 'stock-low' : 'stock-ok');
+      html += '<span class="stock-label ' + stockClass + '">'
+            + (outOfStock ? '在庫切れ' : '計 ' + totalStock + ' 点') + '</span>';
+      html += '</div></div>';
+    }
+
+    if (groupOrder.length === 0) {
+      html = '<p style="color:#5f6368;text-align:center;padding:16px">このカテゴリに商品がありません</p>';
+    }
+
+    document.getElementById('content').innerHTML = html;
+  }
+
+  /* ===== 商品選択 → サイズ一覧 ===== */
+  function onProductClick(name) {
+    selectedProductName = name;
+    document.getElementById('search').value = '';
+    showSizes();
+  }
+
+  function showSizes() {
+    var label = getCategoryLabel(selectedCategory);
+    updateCatChips();
+
+    // 戻るボタン
+    document.getElementById('nav').innerHTML =
+      '<button class="btn-back" onclick="showProducts()">\u2190 ' + escapeHtml(label) + '</button>';
+
+    // この商品名 × カテゴリの商品を取得
+    var items = [];
+    for (var i = 0; i < products.length; i++) {
+      var p = products[i];
+      if (p.category === selectedCategory && p.name === selectedProductName) items.push(p);
+    }
+
+    document.getElementById('count').textContent = escapeHtml(selectedProductName);
+
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+      html += buildSaleCard(items[i], true);
+    }
+
     if (items.length === 0) {
-      container.innerHTML = '<p style="color:#5f6368;padding:16px;text-align:center">該当する商品がありません</p>';
+      html = '<p style="color:#5f6368;text-align:center;padding:16px">該当する商品がありません</p>';
+    }
+
+    document.getElementById('content').innerHTML = html;
+  }
+
+  /* ===== 検索結果（フラットリスト） ===== */
+  function showSearchResults(results) {
+    // カテゴリチップのアクティブ解除
+    var chips = document.querySelectorAll('.cat-chip');
+    for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
+
+    document.getElementById('nav').innerHTML = '';
+    document.getElementById('count').textContent =
+      results.length + ' 件表示（全 ' + products.length + ' 件）';
+
+    if (results.length === 0) {
+      document.getElementById('content').innerHTML =
+        '<p style="color:#5f6368;padding:16px;text-align:center">該当する商品がありません</p>';
       return;
     }
 
     var html = '';
-    for (var i = 0; i < items.length; i++) {
-      var p = items[i];
-      var outOfStock = p.stock <= 0;
-      html += '<div class="card' + (outOfStock ? ' out-of-stock' : '') + '" data-code="' + escapeHtml(p.code) + '">';
+    for (var i = 0; i < results.length; i++) {
+      html += buildSaleCard(results[i], false);
+    }
+    document.getElementById('content').innerHTML = html;
+  }
 
-      // タイトル
-      html += '<div class="card-title">' + escapeHtml(p.code) + '｜' + escapeHtml(p.name) + '</div>';
+  /* ===== 売上登録カード生成 ===== */
+  function buildSaleCard(p, showSizeAsTitle) {
+    var outOfStock = p.stock <= 0;
+    var html = '<div class="sale-card' + (outOfStock ? ' out-of-stock' : '') + '">';
 
-      // メタ情報
-      html += '<div class="card-meta">';
+    // タイトル
+    if (showSizeAsTitle) {
+      var title = p.size ? p.size : p.code;
+      html += '<div class="card-title">' + escapeHtml(title) + '</div>';
+    } else {
+      html += '<div class="card-title">' + escapeHtml(p.code) + '\uff5c' + escapeHtml(p.name) + '</div>';
+    }
+
+    // メタ情報
+    html += '<div class="card-meta">';
+    if (!showSizeAsTitle) {
       if (p.series) html += '<span>' + escapeHtml(p.series) + '</span>';
       if (p.size)   html += '<span>' + escapeHtml(p.size) + '</span>';
-      if (p.gender) html += '<span>' + escapeHtml(p.gender) + '</span>';
-      if (p.price)  html += '<span>&yen;' + Number(p.price).toLocaleString() + '</span>';
-
-      // 残数ラベル
-      var stockClass = outOfStock ? 'stock-zero' : (p.stock <= 3 ? 'stock-low' : 'stock-ok');
-      html += '<span class="stock-label ' + stockClass + '" id="stock-' + escapeHtml(p.code) + '">';
-      html += outOfStock ? '在庫切れ' : '残 ' + p.stock;
-      html += '</span>';
-      html += '</div>';
-
-      // 数量 + ボタン
-      html += '<div class="card-actions">';
-      html += '<label class="qty-label">数量</label>';
-      html += '<input type="number" class="qty-input" id="qty-' + escapeHtml(p.code) + '" '
-            + 'value="1" min="1" max="' + Math.max(p.stock, 0) + '"'
-            + (outOfStock ? ' disabled' : '') + '>';
-      html += '<button class="btn-sale" id="btn-' + escapeHtml(p.code) + '" '
-            + 'onclick="doSale(\'' + escapeJs(p.code) + '\')"'
-            + (outOfStock ? ' disabled' : '') + '>'
-            + (outOfStock ? '在庫切れ' : '売上登録')
-            + '</button>';
-      html += '</div>';
-
-      html += '</div>';
     }
-    container.innerHTML = html;
+    html += '<span>' + escapeHtml(p.code) + '</span>';
+    if (p.gender) html += '<span>' + escapeHtml(p.gender) + '</span>';
+    if (p.price)  html += '<span>&yen;' + Number(p.price).toLocaleString() + '</span>';
+
+    var stockClass = outOfStock ? 'stock-zero' : (p.stock <= 3 ? 'stock-low' : 'stock-ok');
+    html += '<span class="stock-label ' + stockClass + '" id="stock-' + escapeHtml(p.code) + '">'
+          + (outOfStock ? '在庫切れ' : '残 ' + p.stock) + '</span>';
+    html += '</div>';
+
+    // 数量 + ボタン
+    html += '<div class="card-actions">';
+    html += '<label class="qty-label">数量</label>';
+    html += '<input type="number" class="qty-input" id="qty-' + escapeHtml(p.code) + '" '
+          + 'value="1" min="1" max="' + Math.max(p.stock, 0) + '"'
+          + (outOfStock ? ' disabled' : '') + '>';
+    html += '<button class="btn-sale" id="btn-' + escapeHtml(p.code) + '" '
+          + 'onclick="doSale(\'' + escapeJs(p.code) + '\')"'
+          + (outOfStock ? ' disabled' : '') + '>'
+          + (outOfStock ? '在庫切れ' : '売上登録')
+          + '</button>';
+    html += '</div></div>';
+    return html;
+  }
+
+  /* ===== カテゴリチップ更新 ===== */
+  function updateCatChips() {
+    var catWrap = document.getElementById('catWrap');
+    var html = '';
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      var cat = CATEGORIES[i];
+      var cnt = countByCategory(cat.id);
+      if (cnt === 0) continue;
+      var active = selectedCategory === cat.id ? ' active' : '';
+      html += '<div class="cat-chip' + active + '" onclick="onCategoryClick(\'' + cat.id + '\')">'
+            + cat.label + '</div>';
+    }
+    catWrap.innerHTML = html;
   }
 
   /* ===== 売上登録 ===== */
@@ -289,7 +576,7 @@
       .withSuccessHandler(function(result) {
         if (result.success) {
           showToast(result.message, 'success');
-          updateCardStock(code, result.newStock);
+          updateStock(code, result.newStock);
         } else {
           showToast(result.message, 'error');
           btn.disabled = false;
@@ -304,9 +591,8 @@
       .recordSaleByCode(code, qty);
   }
 
-  /* ===== カード残数更新 ===== */
-  function updateCardStock(code, newStock) {
-    // ローカルデータ更新
+  /* ===== 在庫更新 ===== */
+  function updateStock(code, newStock) {
     for (var i = 0; i < products.length; i++) {
       if (products[i].code === code) {
         products[i].stock = newStock;
@@ -317,19 +603,16 @@
     var stockEl = document.getElementById('stock-' + code);
     var btn     = document.getElementById('btn-' + code);
     var qtyEl   = document.getElementById('qty-' + code);
-    var card    = btn ? btn.closest('.card') : null;
 
     if (newStock <= 0) {
       if (stockEl) { stockEl.className = 'stock-label stock-zero'; stockEl.textContent = '在庫切れ'; }
       if (btn)     { btn.disabled = true; btn.textContent = '在庫切れ'; }
       if (qtyEl)   { qtyEl.disabled = true; qtyEl.value = 1; qtyEl.max = 0; }
-      if (card)    { card.classList.add('out-of-stock'); }
     } else {
       var stockClass = newStock <= 3 ? 'stock-low' : 'stock-ok';
       if (stockEl) { stockEl.className = 'stock-label ' + stockClass; stockEl.textContent = '残 ' + newStock; }
       if (btn)     { btn.disabled = false; btn.textContent = '売上登録'; }
       if (qtyEl)   { qtyEl.max = newStock; if (parseInt(qtyEl.value, 10) > newStock) qtyEl.value = newStock; }
-      if (card)    { card.classList.remove('out-of-stock'); }
     }
   }
 

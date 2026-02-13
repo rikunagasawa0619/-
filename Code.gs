@@ -10,7 +10,6 @@
 /* ===== 定数 ===== */
 var SHEET_PRODUCTS = '商品一覧';
 var SHEET_SALES    = '販売データ';
-var TEMPLATE_ROW   = 2; // 販売データのテンプレ行
 
 /* ===== メニュー / サイドバー ===== */
 
@@ -197,10 +196,7 @@ function recordSaleByCode(productCode, quantity) {
     var salesHeaders = salesSheet.getRange(1, 1, 1, salesSheet.getLastColumn()).getValues()[0];
     var salesCol     = resolveHeaders_(salesHeaders, SALES_HEADER_SPEC);
 
-    var newRowNum = Math.max(salesSheet.getLastRow() + 1, TEMPLATE_ROW + 1);
-
-    // テンプレ行から書式・入力規則をコピー
-    copyTemplateFormat_(salesSheet, TEMPLATE_ROW, newRowNum);
+    var newRowNum = Math.max(salesSheet.getLastRow() + 1, 2); // ヘッダー(1行目)の次から
 
     // 書き込み値を配列で構築
     var newRow = new Array(salesHeaders.length);
@@ -234,21 +230,3 @@ function recordSaleByCode(productCode, quantity) {
   }
 }
 
-/* ===== テンプレ行コピー ===== */
-
-/**
- * テンプレ行（通常2行目）の書式と入力規則を対象行にコピーする。
- * @param {Sheet} sheet
- * @param {number} templateRow - テンプレ行番号（1始まり）
- * @param {number} targetRow   - 対象行番号（1始まり）
- */
-function copyTemplateFormat_(sheet, templateRow, targetRow) {
-  var lastCol = sheet.getLastColumn();
-  if (lastCol < 1) return;
-
-  var srcRange = sheet.getRange(templateRow, 1, 1, lastCol);
-  var dstRange = sheet.getRange(targetRow,   1, 1, lastCol);
-
-  srcRange.copyTo(dstRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
-  srcRange.copyTo(dstRange, SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION, false);
-}

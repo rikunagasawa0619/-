@@ -91,7 +91,29 @@
     margin: 4px 0 8px;
   }
 
-  /* === 商品カード（カテゴリ内一覧：クリック可能） === */
+  /* === Gender ボタン === */
+  .gender-card {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    padding: 14px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a73e8;
+    transition: box-shadow .15s;
+  }
+  .gender-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,.1); }
+  .gender-card .sub {
+    font-size: 11px;
+    font-weight: 400;
+    color: #5f6368;
+    margin-top: 4px;
+  }
+
+  /* === 商品カード（クリック可能） === */
   .product-card {
     background: #fff;
     border: 1px solid #dadce0;
@@ -119,7 +141,7 @@
   }
   .product-card .meta span { margin-right: 8px; }
 
-  /* === サイズ／検索結果カード（売上登録ボタン付き） === */
+  /* === 売上登録カード === */
   .sale-card {
     background: #fff;
     border: 1px solid #dadce0;
@@ -272,34 +294,14 @@
   /* ===== データ ===== */
   var products = [];
   var selectedCategory = null;
+  var selectedGender = null;
   var selectedProductName = null;
 
-  /* ===== カテゴリ定義 ===== */
-  var CATEGORIES = [
-    { id: 'arm',     label: 'アーム系',   keywords: ['アーム'] },
-    { id: 'socks',   label: 'ソックス系', keywords: ['ソックス', '靴下'] },
-    { id: 'tops',    label: 'トップス系', keywords: ['トップス', 'シャツ', 'ポロ', 'ジャケット', 'ベスト', 'ニット'] },
-    { id: 'bottoms', label: 'ボトムス系', keywords: ['ボトムス', 'パンツ', 'スカート', 'レギンス', 'タイツ', 'ショーツ'] },
-    { id: 'other',   label: 'その他商品', keywords: [] }
-  ];
+  /* ===== カテゴリ表示順（シートの値と一致させる） ===== */
+  var CATEGORY_ORDER = ['トップス', 'ボトムス', 'アーム系', 'ソックス系', 'その他'];
 
-  function categorize(p) {
-    var text = (p.name + ' ' + p.series).toLowerCase();
-    for (var i = 0; i < CATEGORIES.length - 1; i++) {
-      var cat = CATEGORIES[i];
-      for (var j = 0; j < cat.keywords.length; j++) {
-        if (text.indexOf(cat.keywords[j].toLowerCase()) !== -1) return cat.id;
-      }
-    }
-    return 'other';
-  }
-
-  function getCategoryLabel(catId) {
-    for (var i = 0; i < CATEGORIES.length; i++) {
-      if (CATEGORIES[i].id === catId) return CATEGORIES[i].label;
-    }
-    return '';
-  }
+  /* Men's/Women's サブ階層を挟むカテゴリ */
+  var GENDER_CATEGORIES = ['トップス', 'ボトムス'];
 
   /* ===== 初期化 ===== */
   document.addEventListener('DOMContentLoaded', function() {
@@ -311,9 +313,6 @@
 
   function onProductsLoaded(data) {
     products = data || [];
-    for (var i = 0; i < products.length; i++) {
-      products[i].category = categorize(products[i]);
-    }
     showCategories();
   }
 
@@ -329,8 +328,14 @@
       // 検索クリア → 元の画面に戻る
       if (selectedProductName) {
         showSizes();
-      } else if (selectedCategory) {
+      } else if (selectedGender) {
         showProducts();
+      } else if (selectedCategory) {
+        if (GENDER_CATEGORIES.indexOf(selectedCategory) !== -1) {
+          showGenders();
+        } else {
+          showProducts();
+        }
       } else {
         showCategories();
       }
@@ -346,16 +351,30 @@
   /* ===== カテゴリ一覧 ===== */
   function showCategories() {
     selectedCategory = null;
+    selectedGender = null;
     selectedProductName = null;
+
+    // シートの値からカテゴリ一覧を作成（CATEGORY_ORDER順 + 未定義は末尾）
+    var catCounts = {};
+    for (var i = 0; i < products.length; i++) {
+      var cat = products[i].category || 'その他';
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    }
+
+    var orderedCats = [];
+    for (var i = 0; i < CATEGORY_ORDER.length; i++) {
+      if (catCounts[CATEGORY_ORDER[i]]) orderedCats.push(CATEGORY_ORDER[i]);
+    }
+    for (var cat in catCounts) {
+      if (orderedCats.indexOf(cat) === -1) orderedCats.push(cat);
+    }
 
     var catWrap = document.getElementById('catWrap');
     var html = '';
-    for (var i = 0; i < CATEGORIES.length; i++) {
-      var cat = CATEGORIES[i];
-      var cnt = countByCategory(cat.id);
-      if (cnt === 0) continue;
-      html += '<div class="cat-chip" onclick="onCategoryClick(\'' + cat.id + '\')">'
-            + cat.label + ' (' + cnt + ')</div>';
+    for (var i = 0; i < orderedCats.length; i++) {
+      var cat = orderedCats[i];
+      html += '<div class="cat-chip" onclick="onCategoryClick(\'' + escapeJs(cat) + '\')">'
+            + escapeHtml(cat) + ' (' + catCounts[cat] + ')</div>';
     }
     catWrap.innerHTML = html;
 
@@ -366,42 +385,86 @@
       + 'カテゴリを選択するか、<br>検索バーで商品を検索してください</p>';
   }
 
-  function countByCategory(catId) {
-    var n = 0;
-    for (var i = 0; i < products.length; i++) {
-      if (products[i].category === catId) n++;
+  /* ===== カテゴリ選択 ===== */
+  function onCategoryClick(cat) {
+    selectedCategory = cat;
+    selectedGender = null;
+    selectedProductName = null;
+    document.getElementById('search').value = '';
+
+    if (GENDER_CATEGORIES.indexOf(cat) !== -1) {
+      showGenders();
+    } else {
+      showProducts();
     }
-    return n;
   }
 
-  /* ===== カテゴリ選択 → 商品一覧 ===== */
-  function onCategoryClick(catId) {
-    selectedCategory = catId;
+  /* ===== Men's / Women's 選択（トップス・ボトムスのみ） ===== */
+  function showGenders() {
+    selectedGender = null;
+    selectedProductName = null;
+    updateCatChips();
+
+    document.getElementById('nav').innerHTML =
+      '<button class="btn-back" onclick="showCategories()">\u2190 カテゴリ一覧</button>';
+
+    // このカテゴリにある gender の種類を集める
+    var genderCounts = {};
+    for (var i = 0; i < products.length; i++) {
+      var p = products[i];
+      if ((p.category || 'その他') !== selectedCategory) continue;
+      var g = p.gender || '未設定';
+      genderCounts[g] = (genderCounts[g] || 0) + 1;
+    }
+
+    document.getElementById('count').textContent = escapeHtml(selectedCategory);
+
+    var html = '';
+    for (var g in genderCounts) {
+      html += '<div class="gender-card" onclick="onGenderClick(\'' + escapeJs(g) + '\')">'
+            + escapeHtml(g)
+            + '<div class="sub">' + genderCounts[g] + ' 件</div></div>';
+    }
+
+    document.getElementById('content').innerHTML = html;
+  }
+
+  function onGenderClick(gender) {
+    selectedGender = gender;
     selectedProductName = null;
     document.getElementById('search').value = '';
     showProducts();
   }
 
+  /* ===== 商品一覧（名前でグループ化） ===== */
   function showProducts() {
-    var label = getCategoryLabel(selectedCategory);
-
-    // カテゴリチップ更新（選択中をハイライト）
+    selectedProductName = null;
     updateCatChips();
 
     // 戻るボタン
-    document.getElementById('nav').innerHTML =
-      '<button class="btn-back" onclick="showCategories()">\u2190 カテゴリ一覧</button>';
-
-    // カテゴリ内の商品を名前でグループ化
-    var catProducts = [];
-    for (var i = 0; i < products.length; i++) {
-      if (products[i].category === selectedCategory) catProducts.push(products[i]);
+    var hasGender = GENDER_CATEGORIES.indexOf(selectedCategory) !== -1;
+    if (hasGender && selectedGender) {
+      document.getElementById('nav').innerHTML =
+        '<button class="btn-back" onclick="showGenders()">\u2190 ' + escapeHtml(selectedCategory) + '</button>';
+    } else {
+      document.getElementById('nav').innerHTML =
+        '<button class="btn-back" onclick="showCategories()">\u2190 カテゴリ一覧</button>';
     }
 
+    // フィルタ
+    var filtered = [];
+    for (var i = 0; i < products.length; i++) {
+      var p = products[i];
+      if ((p.category || 'その他') !== selectedCategory) continue;
+      if (hasGender && selectedGender && (p.gender || '未設定') !== selectedGender) continue;
+      filtered.push(p);
+    }
+
+    // 名前でグループ化
     var groups = {};
     var groupOrder = [];
-    for (var i = 0; i < catProducts.length; i++) {
-      var p = catProducts[i];
+    for (var i = 0; i < filtered.length; i++) {
+      var p = filtered[i];
       var key = p.name;
       if (!groups[key]) {
         groups[key] = [];
@@ -410,7 +473,9 @@
       groups[key].push(p);
     }
 
-    document.getElementById('count').textContent = label + ': ' + groupOrder.length + ' 商品';
+    var title = selectedCategory;
+    if (hasGender && selectedGender) title += ' / ' + selectedGender;
+    document.getElementById('count').textContent = escapeHtml(title) + ': ' + groupOrder.length + ' 商品';
 
     var html = '';
     for (var i = 0; i < groupOrder.length; i++) {
@@ -454,18 +519,23 @@
   }
 
   function showSizes() {
-    var label = getCategoryLabel(selectedCategory);
     updateCatChips();
 
-    // 戻るボタン
+    // 戻る先を決める
+    var hasGender = GENDER_CATEGORIES.indexOf(selectedCategory) !== -1;
+    var backLabel = selectedCategory;
+    if (hasGender && selectedGender) backLabel += ' / ' + selectedGender;
     document.getElementById('nav').innerHTML =
-      '<button class="btn-back" onclick="showProducts()">\u2190 ' + escapeHtml(label) + '</button>';
+      '<button class="btn-back" onclick="showProducts()">\u2190 ' + escapeHtml(backLabel) + '</button>';
 
-    // この商品名 × カテゴリの商品を取得
+    // この商品名に該当する商品を取得
     var items = [];
     for (var i = 0; i < products.length; i++) {
       var p = products[i];
-      if (p.category === selectedCategory && p.name === selectedProductName) items.push(p);
+      if ((p.category || 'その他') !== selectedCategory) continue;
+      if (hasGender && selectedGender && (p.gender || '未設定') !== selectedGender) continue;
+      if (p.name !== selectedProductName) continue;
+      items.push(p);
     }
 
     document.getElementById('count').textContent = escapeHtml(selectedProductName);
@@ -484,7 +554,6 @@
 
   /* ===== 検索結果（フラットリスト） ===== */
   function showSearchResults(results) {
-    // カテゴリチップのアクティブ解除
     var chips = document.querySelectorAll('.cat-chip');
     for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
 
@@ -510,7 +579,6 @@
     var outOfStock = p.stock <= 0;
     var html = '<div class="sale-card' + (outOfStock ? ' out-of-stock' : '') + '">';
 
-    // タイトル
     if (showSizeAsTitle) {
       var title = p.size ? p.size : p.code;
       html += '<div class="card-title">' + escapeHtml(title) + '</div>';
@@ -518,7 +586,6 @@
       html += '<div class="card-title">' + escapeHtml(p.code) + '\uff5c' + escapeHtml(p.name) + '</div>';
     }
 
-    // メタ情報
     html += '<div class="card-meta">';
     if (!showSizeAsTitle) {
       if (p.series) html += '<span>' + escapeHtml(p.series) + '</span>';
@@ -533,7 +600,6 @@
           + (outOfStock ? '在庫切れ' : '残 ' + p.stock) + '</span>';
     html += '</div>';
 
-    // 数量 + ボタン
     html += '<div class="card-actions">';
     html += '<label class="qty-label">数量</label>';
     html += '<input type="number" class="qty-input" id="qty-' + escapeHtml(p.code) + '" '
@@ -550,15 +616,26 @@
 
   /* ===== カテゴリチップ更新 ===== */
   function updateCatChips() {
+    var catCounts = {};
+    for (var i = 0; i < products.length; i++) {
+      var cat = products[i].category || 'その他';
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    }
+    var orderedCats = [];
+    for (var i = 0; i < CATEGORY_ORDER.length; i++) {
+      if (catCounts[CATEGORY_ORDER[i]]) orderedCats.push(CATEGORY_ORDER[i]);
+    }
+    for (var cat in catCounts) {
+      if (orderedCats.indexOf(cat) === -1) orderedCats.push(cat);
+    }
+
     var catWrap = document.getElementById('catWrap');
     var html = '';
-    for (var i = 0; i < CATEGORIES.length; i++) {
-      var cat = CATEGORIES[i];
-      var cnt = countByCategory(cat.id);
-      if (cnt === 0) continue;
-      var active = selectedCategory === cat.id ? ' active' : '';
-      html += '<div class="cat-chip' + active + '" onclick="onCategoryClick(\'' + cat.id + '\')">'
-            + cat.label + '</div>';
+    for (var i = 0; i < orderedCats.length; i++) {
+      var cat = orderedCats[i];
+      var active = selectedCategory === cat ? ' active' : '';
+      html += '<div class="cat-chip' + active + '" onclick="onCategoryClick(\'' + escapeJs(cat) + '\')">'
+            + escapeHtml(cat) + '</div>';
     }
     catWrap.innerHTML = html;
   }

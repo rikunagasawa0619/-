@@ -70,14 +70,15 @@ function resolveHeaders_(headers, spec) {
 
 /** 商品一覧ヘッダー候補 */
 var PRODUCT_HEADER_SPEC = {
-  code:    ['商品コード'],
-  series:  ['シリーズ', '生地シリーズ'],
-  size:    ['サイズ'],
-  name:    ['商品名'],
-  price:   ['金額(本体)', '金額（本体）', '金額'],
-  gender:  ["Men's/Women's", "Men's/Women's"],
-  stock:   ['残数'],
-  remarks: ['備考']
+  code:     ['商品コード'],
+  series:   ['シリーズ', '生地シリーズ'],
+  size:     ['サイズ'],
+  name:     ['商品名'],
+  price:    ['金額(本体)', '金額（本体）', '金額'],
+  category: ['カテゴリ'],
+  gender:   ["Men's/Women's", "Men's/Women's"],
+  stock:    ['残数'],
+  remarks:  ['備考']
 };
 
 /**
@@ -104,15 +105,16 @@ function getProductList() {
     if (!code) continue; // 空行スキップ
 
     products.push({
-      code:    code,
-      name:    col.name    !== -1 ? String(row[col.name])    : '',
-      series:  col.series  !== -1 ? String(row[col.series])  : '',
-      size:    col.size    !== -1 ? String(row[col.size])    : '',
-      price:   col.price   !== -1 ? Number(row[col.price])   : 0,
-      gender:  col.gender  !== -1 ? String(row[col.gender])  : '',
-      stock:   col.stock   !== -1 ? Number(row[col.stock])   : 0,
-      remarks: col.remarks !== -1 ? String(row[col.remarks]) : '',
-      row:     i + 1 // シート上の行番号（1始まり）
+      code:     code,
+      name:     col.name     !== -1 ? String(row[col.name])     : '',
+      series:   col.series   !== -1 ? String(row[col.series])   : '',
+      size:     col.size     !== -1 ? String(row[col.size])     : '',
+      price:    col.price    !== -1 ? Number(row[col.price])    : 0,
+      category: col.category !== -1 ? String(row[col.category]) : '',
+      gender:   col.gender   !== -1 ? String(row[col.gender])   : '',
+      stock:    col.stock    !== -1 ? Number(row[col.stock])    : 0,
+      remarks:  col.remarks  !== -1 ? String(row[col.remarks])  : '',
+      row:      i + 1 // シート上の行番号（1始まり）
     });
   }
   return products;
